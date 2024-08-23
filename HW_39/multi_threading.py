@@ -108,3 +108,93 @@ thread_find_average.join()
 print(f'Сгенерированный список - {random_list}')
 print(f'Сумма элементов = {summ}')
 print(f'Среднее арифметическое = {average}')
+
+# Задание 4
+print('\n\nЗадание 4')
+
+filename = input('Введите имя файла(без расширения): ')
+
+# Глобальные переменные для статистики. q-primes - считает кол-во простых чисел
+# max_fact и min_fact - максимальный и минимальный факториалы
+q_primes = 0
+max_fact, min_fact = None, None
+
+
+def create_rnd_file(filename):
+    '''Функция создаёт заданный файл с раширением *.txt и заполняет
+    его случайными целыми числами от 1 до 100 включительно'''
+    with open(f'{filename}.txt', 'w', encoding='utf-8') as f:
+        lst = [randint(1, 101) for _ in range(20)]
+        for num in lst:
+            f.write(str(num) + ' ')
+
+
+def is_prime(n):
+    '''Проверяет, является ли число простым'''
+    if n <= 1:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def find_primes(filename):
+    '''Находит все простые числа в файле и записываем в файл primes.txt'''
+    primes = []
+    global q_primes
+    with open(f'{filename}.txt', 'r') as f:
+        lst = f.read().split()
+        for num in lst:
+            if is_prime(int(num)):
+                primes.append(num)
+    with open('primes.txt', 'w', encoding='utf-8') as f:
+        f.write(str(primes))
+    q_primes = len(primes)
+
+
+def factorial(n):
+    '''Вычисляет факториал числа n'''
+    result = 1
+    for i in range(2, n + 1):
+        result *= i
+    return result
+
+def calc_factorials(filename):
+    '''Вычисляем факториал каждого числа в файле и записываем в файл factorials.txt
+    В отличие от простых чисел здесь будем записывать построчно, потому что
+    факториалы огромные и плохочитаемые подряд'''
+    factorials = []
+    global max_fact, min_fact
+    with open(f'{filename}.txt', 'r') as f:
+        lst = f.read().split()
+        for num in lst:
+            factorials.append(factorial(int(num)))
+    with open('factorials.txt', 'w', encoding='utf-8') as f:
+        for fact in factorials:
+            f.write(str(fact) + '\n')
+    max_fact = max(factorials)
+    min_fact = min(factorials)
+
+
+thread_create_file = threading.Thread(target=create_rnd_file, args=(filename,))
+thread_find_primes = threading.Thread(target=find_primes, args=(filename,))
+thread_factorials = threading.Thread(target=calc_factorials, args=(filename,))
+
+thread_create_file.start()
+thread_create_file.join()
+
+print(f'В файл {filename}.txt записаны 20 случайных целых чисел')
+print('Начинаю поиск целых чисел и расчёт факториалов')
+print('...')
+thread_find_primes.start()
+thread_factorials.start()
+
+thread_find_primes.join()
+thread_factorials.join()
+print(f'В файл primes.txt записаны целые числа')
+print(f'В файл factorials.txt записаны факториалы\n')
+print(f'Всего найдено {q_primes} простых чисел')
+print(f'Максимальный факториал - {max_fact}')
+print(f'Минимальный факториал - {min_fact}')
+
